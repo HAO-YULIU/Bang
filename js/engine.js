@@ -75,13 +75,14 @@ const nOf = () => G ? G.players.length : 1;
 // ---------- 小工具：toast / 台詞泡泡 / 特效 ----------
 function toast(t, cls = '') {
   const e = document.createElement('div'); e.className = 'toast ' + cls; e.innerHTML = t; $('#toasts').append(e);
+  while ($('#toasts').children.length > 4) $('#toasts').firstChild.remove();
   setTimeout(() => e.classList.add('out'), 2600); setTimeout(() => e.remove(), 3100);
 }
 function quip(ch, text, zh) {
   const c = CH[ch] || CH.xy, e = document.createElement('div');
   e.className = 'quip'; e.style.setProperty('--c', c.c);
   e.innerHTML = `<img src="${PORTRAIT.head(ch === 'ang' ? 'ang' : ch, 'talk')}" alt=""><div><b>${c.n}</b><p>${esc(text)}</p>${zh ? `<small>【中文翻譯】${esc(zh)}</small>` : ''}</div>`;
-  $('#quips').append(e); while ($('#quips').children.length > 4) $('#quips').firstChild.remove();
+  $('#quips').append(e); while ($('#quips').children.length > 3) $('#quips').firstChild.remove();
   setTimeout(() => e.classList.add('out'), 3800); setTimeout(() => e.remove(), 4300);
 }
 function burst(emoji = '✨', n = 18) {
@@ -101,7 +102,7 @@ const FINALE = { mods: {}, register(name, mod) { this.mods[name] = mod; } };
 window.FINALE = FINALE;
 
 // ---------- 畫面切換 ----------
-function show(id) { $$('.scr').forEach(s => s.classList.toggle('on', s.id === id)); window.scrollTo(0, 0); }
+function show(id) { if (document.body.dataset.scr !== id) window.scrollTo(0, 0); document.body.dataset.scr = id; $$('.scr').forEach(s => s.classList.toggle('on', s.id === id)); }
 
 // ---------- 存檔 ----------
 const SAVE = 'bang_g';

@@ -309,3 +309,7 @@ input { font: inherit; }
 .k-wc { width: var(--wcell, 32px); height: var(--wcell, 32px); border: 1.5px solid #CDBB98; background: #fff; border-radius: 6px; padding: 0; font-weight: 700; font-size: 15px; }
 .k-wc.sel { background: #FFD978; } .k-wc.hit { background: #9FE0B8; border-color: #2BA670; }
 @media (max-width: 760px) { .k-tile { width: 26px; height: 35px; } .k-tile svg { width: 21px; height: 28px; } .k-tile.hon { font-size: 18px; } .k-card { width: 34px; height: 48px; } }
+#finEnd:not(:empty) { position: fixed; z-index: 85; left: 0; right: 0; bottom: 0; padding: 10px 10px calc(10px + var(--safe-b)); background: linear-gradient(180deg, rgba(16,36,26,0), rgba(16,36,26,.92) 40%); }
+#finEnd .fin-done { padding: 6px; }
+body[data-scr="finale"] #quips { left: auto; right: 10px; top: auto; bottom: calc(70px + var(--safe-b)); max-width: min(320px, calc(100vw - 20px)); }
+body[data-scr="finale"] .quip { padding: 4px 10px 4px 4px; } body[data-scr="finale"] .quip img { width: 32px; height: 32px; }

@@ -89,7 +89,7 @@ const C1_MOLD = (() => {
   let s = `<rect width="330" height="300" rx="18" fill="#9C5E38"/><rect x="10" y="10" width="310" height="280" rx="12" fill="#B9774A" stroke="#7A4628" stroke-width="3"/>`;
   for (let i = 0; i < 18; i++) s += `<circle cx="${(i * 71) % 300 + 15}" cy="${(i * 47) % 270 + 15}" r="${1 + i % 3}" fill="#8A4E2E" opacity=".5"/>`;
   cols.forEach((c, k) => [...c].forEach((ch, r) => {
-    s += `<text transform="translate(${45 + k * 60} ${50 + r * 44}) scale(-1 1)" text-anchor="middle" font-size="34" font-family="serif" font-weight="900" fill="#4A2412" stroke="#E0A070" stroke-width=".6">${ch}</text>`;
+    s += `<text transform="translate(${45 + k * 60} ${50 + r * 44}) scale(-1 1)" text-anchor="middle" font-size="34" font-family="serif" font-weight="900" fill="#3A1606" stroke="#F0B888" stroke-width=".8" paint-order="stroke">${ch}</text>`;
   }));
   return `<svg viewBox="0 0 330 300" style="width:100%;max-width:420px;display:block;margin:0 auto">${s}</svg>`;
 })();
@@ -105,11 +105,11 @@ P({
 });
 
 // ---------- 4. 翠玉白菜上的螽斯（越南語指南針） ----------
-const C1_BUG = (x, y, ang, ant, c) => `<g transform="translate(${x} ${y}) rotate(${ang})">
+const C1_BUG = (x, y, ang, ant, c) => `<g transform="translate(${x} ${y}) rotate(${ang}) scale(1.25)">
   <g stroke="${c}" stroke-width="2.2" fill="none" stroke-linecap="round">
     <path d="M2 0 L-4 10 M2 0 L-4 -10 M6 0 L12 9 M6 0 L12 -9"/>
     <path d="M-6 3 L-18 16 L-30 14 M-6 -3 L-18 -16 L-30 -14" stroke-width="2.6"/>
-    <path d="M14 2 Q${14 + ant * .5} ${6 + ant * .15} ${14 + ant} ${10 + ant * .1} M14 -2 Q${14 + ant * .5} ${-6 - ant * .15} ${14 + ant} ${-10 - ant * .1}" stroke-width="1.4"/></g>
+    <path d="M14 2 Q${14 + ant * .5} ${6 + ant * .15} ${14 + ant} ${10 + ant * .1} M14 -2 Q${14 + ant * .5} ${-6 - ant * .15} ${14 + ant} ${-10 - ant * .1}" stroke="#E8F5B0" stroke-width="1.6"/></g>
   <ellipse cx="-12" cy="0" rx="15" ry="5.5" fill="${c}" stroke="#FFF3B0" stroke-width="1.2"/><ellipse cx="4" cy="0" rx="6" ry="5" fill="${c}" stroke="#FFF3B0" stroke-width="1.2"/><circle cx="12" cy="0" r="4.2" fill="${c}" stroke="#FFF3B0" stroke-width="1.2"/></g>`;
 const C1_CABBAGE = `<svg viewBox="0 0 400 300" style="width:100%;border-radius:12px;display:block">
   <defs><linearGradient id="c1jade" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#F4F1E2"/><stop offset=".45" stop-color="#CFE6C8"/><stop offset=".7" stop-color="#5FA86A"/><stop offset="1" stop-color="#2E7A44"/></linearGradient></defs>
@@ -175,7 +175,7 @@ const C1_VIEW = (cols, label, sub) => {
   return `<svg viewBox="0 0 ${w + 40} ${h + 50}" style="width:100%;max-width:220px">${s}</svg>`;
 };
 const C1_TOP = (() => {
-  const t = '1101011101110110', S = 22; let s = `<rect width="140" height="150" rx="10" fill="#F4F8F2"/>`;
+  const t = '1101010111010110', S = 22; let s = `<rect width="140" height="150" rx="10" fill="#F4F8F2"/>`;
   [...t].forEach((v, i) => { const y = i / 4 | 0, x = i % 4; s += `<rect x="${26 + x * S}" y="${24 + y * S}" width="${S}" height="${S}" fill="${v === '1' ? '#4E9A6A' : '#fff'}" stroke="#9AB8A4" stroke-width="1.5"/>`; });
   s += `<text x="70" y="16" text-anchor="middle" font-size="12" font-weight="900">北 ↑</text><text x="70" y="128" text-anchor="middle" font-size="12" font-weight="700">從正上方看</text><text x="70" y="143" text-anchor="middle" font-size="11" fill="#7A6E78">綠色＝有玉塊</text>`;
   return `<svg viewBox="0 0 140 150" style="width:100%;max-width:200px">${s}</svg>`;
@@ -225,7 +225,7 @@ const C1_ROD = (() => {
   const num = (digits, y, slots) => { let s = ''; const L = digits.length; for (let p = 0; p < slots; p++) { const x = 60 + p * 56; s += `<rect x="${x - 26}" y="${y - 26}" width="52" height="52" fill="none" stroke="#C9B080" stroke-dasharray="3 3"/>`; } [...digits].forEach((d, i) => { const place = L - 1 - i, x = 60 + (slots - L + i) * 56; if (d !== '0') s += place % 2 === 0 ? V(+d, x, y) : Hh(+d, x, y); }); return s; };
   const table = (f, y, lab) => `<text x="8" y="${y + 5}" font-size="12" font-weight="700" fill="#5A3A20">${lab}</text>` + [1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => `<g transform="translate(${44 + (n - 1) * 34} 0)"><g stroke="#2A2230" stroke-width="2.4" stroke-linecap="round" transform="scale(.62) translate(0 ${y / .62})">${f(n, 22, 0)}</g><text x="14" y="${y + 26}" font-size="10" text-anchor="middle" fill="#7A6E78">${n}</text></g>`).join('');
   return {
-    slip: `<svg viewBox="0 0 300 200" style="width:100%;max-width:420px;display:block;margin:0 auto;border-radius:10px"><rect width="300" height="200" fill="#E8D3A2"/>${[0, 1, 2, 3, 4].map(i => `<line x1="${i * 60}" y1="0" x2="${i * 60}" y2="200" stroke="#C7A970" stroke-width="2"/>`).join('')}
+    slip: `<svg viewBox="0 0 300 200" style="width:100%;max-width:420px;display:block;margin:0 auto;border-radius:10px"><rect width="300" height="200" fill="#E8D3A2"/>${[0, 1, 2, 3].map(i => `<line x1="0" y1="${8 + i * 64}" x2="300" y2="${14 + i * 64}" stroke="#D6BC86" stroke-width="1.5"/>`).join('')}
       <text x="10" y="58" font-size="13" font-weight="900" fill="#5A3A20">甲</text><text x="10" y="148" font-size="13" font-weight="900" fill="#5A3A20">乙</text>
       <g stroke="#2A2230" stroke-width="4" stroke-linecap="round" transform="translate(20 0)">${num('36', 52, 4)}${num('1072', 142, 4)}</g></svg>`,
     rule: `<svg viewBox="0 0 360 96" style="width:100%;max-width:440px">${table(V, 12, '縱式')}${table(Hh, 60, '橫式')}</svg>`,
@@ -333,7 +333,7 @@ P({
   body: () => `<div class="paper">「玉不會說話，但懂得指引方向。<b>白、肉、玉</b>，找出<b>真正的</b>順序。」</div>
     <p>紙條指向最後一個展廳：「真偽對照特展」。這裡每一件名品旁邊都放了幾件<b>仿製品</b>，展櫃上不寫哪一件才是真的。</p>
     ${C1_HALLSVG}
-    <p class="note">每一格是一個位置。走路的時候只能直直往一個方向走（八個方位都可以），<b>經過的第一個展櫃</b>就是你走到的地方。你們在這一章解開的謎題裡，有人告訴過你們怎麼走。</p>
+    <p class="note">從<b>入口</b>（紅色箭頭那一格）出發，每一格是一個位置。走路的時候只能直直往一個方向走（八個方位都可以），<b>經過的第一個展櫃</b>就是你走到的地方。你們在這一章解開的謎題裡，有人告訴過你們怎麼走。</p>
     <p><b>依序點出你們走到的三個展櫃：真的白菜、真的肉形石、真的玉器。</b></p>`,
   build(el, ctx, done) { el.innerHTML = this.body(ctx); if (!done) K.seq(el, ctx, C1_HALL.map(c => ({ t: `${c.no} ${c.n}`, v: String(c.no) })), { len: 3 }); },
   ui: 'none', ans: ['8-5-10'], solve: '8-5-10', show: '8 翠玉白菜 → 5 肉形石 → 10 玉琮（玉器）',

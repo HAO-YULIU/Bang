@@ -313,3 +313,10 @@ input { font: inherit; }
 #finEnd .fin-done { padding: 6px; }
 body[data-scr="finale"] #quips { left: auto; right: 10px; top: auto; bottom: calc(70px + var(--safe-b)); max-width: min(320px, calc(100vw - 20px)); }
 body[data-scr="finale"] .quip { padding: 4px 10px 4px 4px; } body[data-scr="finale"] .quip img { width: 32px; height: 32px; }
+@media (max-width: 760px) {
+  body:has(#modal:not([hidden])) #quips { top: calc(4px + var(--safe-t)); bottom: auto; max-width: 70vw; }
+  body:has(#modal:not([hidden])) .quip { padding: 3px 8px 3px 3px; border-width: 2px; }
+  body:has(#modal:not([hidden])) .quip img { width: 28px; height: 28px; }
+  body:has(#modal:not([hidden])) .quip p { font-size: 13px; }
+  body:has(#modal:not([hidden])) #toasts { top: auto; bottom: calc(10px + var(--safe-b)); }
+}

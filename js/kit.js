@@ -150,7 +150,7 @@ const K = (() => {
     requestAnimationFrame(frame);
     btn.onclick = () => {
       const c = box._c; shots++; flash = 8; sfx('hit');
-      const b = tg.find(b => !b.dead && b.p && Math.hypot(b.p.x - c.x, b.p.y - c.y) < b.r + 4);
+      const b = tg.filter(b => !b.dead && b.p && Math.hypot(b.p.x - c.x, b.p.y - c.y) < b.r + 4).sort((u, v) => Math.hypot(u.p.x - c.x, u.p.y - c.y) - Math.hypot(v.p.x - c.x, v.p.y - c.y))[0];
       if (!b) { info.textContent = `沒打中（${shots} 發）`; return; }
       b.dead = true; sfx('pop');
       const r = o.onHit(b, hits, tg);

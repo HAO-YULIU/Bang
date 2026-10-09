@@ -97,9 +97,9 @@ const K = (() => {
   function tile(t, cls = '') {
     if (HON[t]) return `<span class="k-tile hon ${t === 'C' ? 'red' : t === 'F' ? 'grn' : t === 'P' ? 'wht' : ''} ${cls}">${t === 'P' ? '<i></i>' : HON[t]}</span>`;
     const n = +t[0], s = t[1];
-    if (s === 'm') return `<span class="k-tile man ${cls}"><b>${CN[n]}</b><em>萬</em></span>`;
-    if (s === 'p') return `<span class="k-tile pin ${cls}">${pinSvg(n)}</span>`;
-    return `<span class="k-tile sou ${cls}">${souSvg(n)}</span>`;
+    if (s === 'm') return `<span class="k-tile t-man ${cls}"><b>${CN[n]}</b><em>萬</em></span>`;
+    if (s === 'p') return `<span class="k-tile t-pin ${cls}">${pinSvg(n)}</span>`;
+    return `<span class="k-tile t-sou ${cls}">${souSvg(n)}</span>`;
   }
   const PINPOS = { 1: [[20, 26]], 2: [[20, 14], [20, 38]], 3: [[10, 10], [20, 26], [30, 42]], 4: [[11, 14], [29, 14], [11, 38], [29, 38]], 5: [[11, 12], [29, 12], [20, 26], [11, 40], [29, 40]], 6: [[12, 10], [28, 10], [12, 26], [28, 26], [12, 42], [28, 42]], 7: [[9, 9], [20, 15], [31, 21], [12, 32], [28, 32], [12, 44], [28, 44]], 8: [[12, 8], [28, 8], [12, 20], [28, 20], [12, 32], [28, 32], [12, 44], [28, 44]], 9: [[9, 10], [20, 10], [31, 10], [9, 26], [20, 26], [31, 26], [9, 42], [20, 42], [31, 42]] };
   const pinSvg = (n) => `<svg viewBox="0 0 40 52">${PINPOS[n].map(([x, y], i) => `<circle cx="${x}" cy="${y}" r="${n === 1 ? 12 : n < 5 ? 7.5 : 5.6}" fill="none" stroke="${n === 1 ? '#C9332B' : (n === 7 && i < 3) || (n !== 7 && n !== 1 && i % 2) ? '#C9332B' : '#1E6AA8'}" stroke-width="2.6"/><circle cx="${x}" cy="${y}" r="${n === 1 ? 4 : 2}" fill="${(i % 2) ? '#1E6AA8' : '#2BA670'}"/>`).join('')}</svg>`;

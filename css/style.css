@@ -294,7 +294,7 @@ input { font: inherit; }
 .k-tiles { display: inline-flex; flex-wrap: wrap; gap: 2px; vertical-align: middle; }
 .k-tile { width: 32px; height: 42px; border-radius: 5px; background: linear-gradient(180deg, #FFFDF4, #F2EAD6); border: 1.5px solid #B8A888; box-shadow: 0 3px 0 #2BA6A0; display: inline-flex; flex-direction: column; align-items: center; justify-content: center; font-family: var(--serif); line-height: 1; }
 .k-tile svg { width: 26px; height: 34px; }
-.k-tile.man b { font-size: 15px; color: #1E1A20; } .k-tile.man em { font-style: normal; font-size: 15px; color: #C9332B; font-weight: 900; }
+.k-tile.t-man b { font-size: 15px; color: #1E1A20; } .k-tile.t-man em { font-style: normal; font-size: 15px; color: #C9332B; font-weight: 900; }
 .k-tile.hon { font-size: 22px; font-weight: 900; color: #1E1A20; } .k-tile.red { color: #C9332B; } .k-tile.grn { color: #1E8A4A; }
 .k-tile.wht i { width: 18px; height: 26px; border: 2.5px solid #3E6AA8; border-radius: 3px; }
 .k-tpick { display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 0; }

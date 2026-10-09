@@ -2,8 +2,10 @@
 // ===== 第九章：大安森林公園——越南公主的最終試煉（12 題） =====
 // 象棋殘局三題在 ch9xq 區塊（需要 window.XQ），其他題目只用 kit。
 document.head.insertAdjacentHTML('beforeend', `<style>
-.c9-hand { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-end; margin: 8px 0; }
-.c9-hand .lab { font-size: 12px; color: var(--muted); width: 100%; }
+.c9-hand { display: block; margin: 8px 0; }
+.c9-hand .k-tiles { display: flex; flex-wrap: wrap; gap: 2px; margin: 2px 0 6px; }
+.c9-hand .c9-meld { display: inline-flex; }
+.c9-hand .lab { display: block; font-size: 12px; color: var(--muted); }
 .c9-meld { padding: 4px; border-radius: 8px; background: #E6F3EE; }
 .c9-rules { font-size: 13px; columns: 2; column-gap: 16px; background: #FFF9EC; border: 1.5px dashed #D8C49A; border-radius: 10px; padding: 8px 12px; }
 .c9-rules div { break-inside: avoid; }
@@ -89,16 +91,16 @@ P({
 
 // 彈珠反彈：12×7 的格子，從底邊距左 7 格以 45° 往右上彈出
 const C9_MARBLE = (() => {
-  const W = 12, H = 7, S = 34, ox = 20, oy = 20;
+  const W = 12, H = 7, S = 34, ox = 40, oy = 40;
   const holes = [[0, 0, '甲'], [12, 0, '乙'], [0, 7, '丙'], [12, 7, '丁'], [6, 0, '戊'], [6, 7, '己'], [12, 3, '庚'], [0, 4, '辛']];
   // 座標：y=0 在下面
   const X = (x) => ox + x * S, Y = (y) => oy + (H - y) * S;
   let g = `<rect x="${ox - 10}" y="${oy - 10}" width="${W * S + 20}" height="${H * S + 20}" rx="14" fill="#7A5A3A"/><rect x="${ox}" y="${oy}" width="${W * S}" height="${H * S}" fill="#3E7A52"/>`;
   for (let i = 0; i <= W; i++) g += `<line x1="${X(i)}" y1="${Y(0)}" x2="${X(i)}" y2="${Y(H)}" stroke="#fff" stroke-opacity=".18"/>`;
   for (let j = 0; j <= H; j++) g += `<line x1="${X(0)}" y1="${Y(j)}" x2="${X(W)}" y2="${Y(j)}" stroke="#fff" stroke-opacity=".18"/>`;
-  holes.forEach(([x, y, l]) => { g += `<circle cx="${X(x)}" cy="${Y(y)}" r="11" fill="#14100E" stroke="#F2B33D" stroke-width="2"/><text x="${X(x) + (x === 0 ? -20 : x === W ? 20 : 0)}" y="${Y(y) + (y === 0 ? 26 : y === H ? -16 : 5)}" text-anchor="middle" font-size="15" font-weight="900" fill="#FFE9A8">${l}</text>`; });
+  holes.forEach(([x, y, l]) => { g += `<circle cx="${X(x)}" cy="${Y(y)}" r="11" fill="#14100E" stroke="#F2B33D" stroke-width="2"/><text x="${X(x) + (x === 0 ? -28 : x === W ? 28 : 0)}" y="${Y(y) + (y === 0 ? 34 : y === H ? -20 : 7)}" text-anchor="middle" font-size="20" font-weight="900" fill="#2A2230">${l}</text>`; });
   g += `<circle cx="${X(7)}" cy="${Y(0)}" r="9" fill="#7EC8F0" stroke="#fff" stroke-width="2"/><path d="M${X(7)} ${Y(0)} l26 -26" stroke="#FFD978" stroke-width="3" marker-end="url(#ar9)"/>`;
-  return `<svg viewBox="0 0 ${W * S + 40} ${H * S + 50}" style="width:100%"><defs><marker id="ar9" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8Z" fill="#FFD978"/></marker></defs>${g}</svg>`;
+  return `<svg viewBox="0 0 ${W * S + 80} ${H * S + 86}" style="width:100%"><defs><marker id="ar9" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8Z" fill="#FFD978"/></marker></defs>${g}</svg>`;
 })();
 P({
   id: 'c9_marble', ch: 9, t: '彈珠會掉進哪個洞？', lv: 2, icon: '🔵', pos: [84, 50],
@@ -120,4 +122,68 @@ P({
   ans: ['56'], solve: '56', num: true, ph: '數字',
   hint: '四個問題的答案都在旅行日誌和序章的謎題裡，一題一題找出來再加。',
   ok: [['zn', 'Các bạn nhớ hết à?', '你們全部都記得？'], ['xy', '因為我們是神人。']],
+});
+
+// ---------- 象棋殘局（要真的把它殺死；黑方由電腦防守） ----------
+function c9xq(n, text, lead) {
+  return function (el, ctx, done) {
+    el.innerHTML = `<p>${lead}</p><p class="note">你執<b style="color:#C9332B">紅方</b>（下方），紅先。請在 <b>${n}</b> 步之內<b>將死</b>黑方；黑方由電腦用最頑強的方式防守。走錯一步（讓黑方逃得掉）就算答錯。</p><div class="c9-xq"></div><div class="k-row"><span class="muted small c9-xq-s">輪到紅方。</span><button type="button" class="btn ghost sm">重來</button></div>`;
+    if (!window.XQ) { el.insertAdjacentHTML('beforeend', '<p>（棋盤載入失敗）</p>'); return; }
+    const root = $('.c9-xq', el), info = $('.c9-xq-s', el);
+    let b = XQ.parse(text), left = n, last = null, lock = false;
+    const draw = () => XQ.renderBoard(root, b, { selectable: done || lock ? null : 'r', highlight: { last, check: XQ.inCheck(b, 'b') ? 'b' : XQ.inCheck(b, 'r') ? 'r' : null }, onMove });
+    const reset = () => { b = XQ.parse(text); left = n; last = null; lock = false; info.textContent = '輪到紅方。'; draw(); };
+    function onMove(m) {
+      if (lock) return;
+      const nb = XQ.apply(b, m); b = nb; last = m; sfx('tile');
+      if (XQ.isMate(nb, 'b')) { lock = true; info.textContent = '將死！'; draw(); ctx.submit('mate'); return; }
+      left--;
+      const replies = XQ.moves(nb, 'b');
+      const okForced = left > 0 && replies.length && replies.every(o => XQ.mateIn(XQ.apply(nb, o), 'r', left));
+      if (!okForced) { lock = true; draw(); info.textContent = '黑方逃掉了……'; setTimeout(() => { ctx.submit('__escape__'); reset(); }, 700); return; }
+      // 黑方挑「最晚被殺」的應著
+      let best = replies[0], bestLen = -1;
+      for (const o of replies) { const ab = XQ.apply(nb, o); let k = 1; while (k < left && !XQ.mateIn(ab, 'r', k)) k++; if (k > bestLen) { bestLen = k; best = o; } }
+      lock = true; draw();
+      setTimeout(() => { b = XQ.apply(b, best); last = best; lock = false; info.textContent = `黑方應了一步。還剩 ${left} 步。`; sfx('tile'); draw(); }, 500);
+    }
+    $('.k-row button', el).onclick = reset;
+    if (done) info.textContent = '已解開。';
+    draw();
+  };
+}
+document.head.insertAdjacentHTML('beforeend', `<style>.c9-xq { max-width: 420px; margin: 6px auto; }</style>`);
+P({
+  id: 'c9_xq1', ch: 9, t: '象棋殘局・一步殺', lv: 1, icon: '♟', pos: [86, 76],
+  build: c9xq(1, '........./........./...abk.../..R....../........./........./........./..C....C./....K..../.........', '棋盤下壓著一張紙條：「小羽說他三歲就會下象棋。那這盤，一步就夠了吧？」'),
+  ui: 'none', ans: ['mate'], solve: 'mate', show: '俥七平四（一步將死）',
+  hint: '看看哪一條直線或橫線上，黑將已經沒有地方躲。炮需要一個「砲架」。',
+  ok: [['xy', '一步殺。神人。'], ['jz', '你剛剛想了五分鐘。']],
+});
+P({
+  id: 'c9_xq2', ch: 9, t: '象棋殘局・兩步殺', lv: 2, icon: '♜', pos: [70, 84], need: ['c9_xq1'],
+  build: c9xq(2, '.......R./....a..../.....k.../........./......b../..C....../........./........./....K..../.........', '第二張紙條：「將軍不一定是最快的路。」'),
+  ui: 'none', ans: ['mate'], solve: 'mate', show: '第一步是一步「不將軍」的炮',
+  hint: '第一步不一定要將軍。先想想：黑將最後會被困在哪裡？哪一顆子要先去當「砲架」或封住路？',
+  ok: [['by', '第一步居然不是將軍。'], ['jz', 'Bang。'], ['by', '……學長，那是我的台詞。']],
+});
+P({
+  id: 'c9_xq3', ch: 9, t: '夢魘・三步殺', lv: 3, icon: '👑', pos: [38, 88], need: ['c9_xq2'],
+  build: c9xq(3, '........./........./b..k....b/C......../........./........./........./........./........./.C...K..R', '最後一張紙條，字寫得很潦草：「真正的高手，連帥都會拿來用。」'),
+  ui: 'none', ans: ['mate'], solve: 'mate', show: '第一步是動「帥」',
+  hint: '象棋裡，將和帥不能在同一條直線上「照面」。你的帥本身，也是一顆可以封住路的子。',
+  ok: [['zn', 'Ôi trời ơi!', '天啊！'], ['xy', '……她剛剛用帥殺人。'], ['jz', '完全法克。']],
+});
+
+// ---------- 最後：五個凹槽 ----------
+P({
+  id: 'c9_slots', ch: 9, t: '五個凹槽', lv: 1, icon: '📦', pos: [52, 16],
+  need: ['c9_mj3', 'c9_big2', 'c9_red', 'c9_maid', 'c9_marble', 'c9_know', 'c9_xq3'],
+  body: () => `<p>桌子上罩著一個大鎖箱，箱蓋上有五個形狀不一樣的凹槽。旁邊刻著一行字：</p>
+    <div class="paper">「旅行，是一站一站走出來的。把這兩天得到的東西，照<b>拿到的先後順序</b>放回去。」</div>
+    <p class="note">🎒 道具欄裡有你們這兩天收集的所有東西，但不是每一樣都屬於這個箱子。</p>`,
+  build(el, ctx, done) { el.innerHTML = this.body(ctx); if (!done) K.seq(el, ctx, [['🟩 神秘玉牌', 'jade'], ['🏮 天燈願望紙', 'wish'], ['🪙 古老銅幣', 'coin'], ['🗺️ 最後的地圖', 'map'], ['🃏 黑色撲克牌', 'card'], ['📒 越南語小抄', 'dict'], ['🎫 紅色車票', 'ticket'], ['🪙 金色籌碼', 'chip']].map(([t, v]) => ({ t, v })), { len: 5 }); },
+  ui: 'none', ans: ['jade-ticket-coin-card-chip'], solve: 'jade-ticket-coin-card-chip', show: '玉牌 → 紅色車票 → 銅幣 → 黑色撲克牌 → 金色籌碼',
+  hint: '博育在饒河夜市拿出的袋子裡，裝的是哪五樣？它們分別是在哪一站拿到的？',
+  ok: [['by', '五件道具……全部亮起來了。'], ['zn', 'Đẹp quá!', '好漂亮！']],
 });

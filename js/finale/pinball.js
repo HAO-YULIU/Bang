@@ -53,9 +53,9 @@
       goal: '一桿之內碰到三顆藍色彈珠！連鎖碰撞、撞牆反彈都算，順序不限。',
       shooter: [180, 490],
       balls: [
-        { k: 'target', x: 96, y: 250, col: 0 },
-        { k: 'target', x: 262, y: 210, col: 1 },
-        { k: 'target', x: 178, y: 118, col: 2 }
+        { k: 'target', x: 120, y: 270, col: 0 },
+        { k: 'target', x: 151, y: 239, col: 1 },
+        { k: 'target', x: 182, y: 208, col: 2 }
       ],
       obs: [
         { t: 'c', x: 180, y: 300, r: 22, kind: 'stone' },
@@ -74,7 +74,7 @@
         { t: 's', x1: 40, y1: 160, x2: 100, y2: 190, r: 7, kind: 'root' }
       ],
       holes: [
-        { x: 296, y: 74, r: 16, kind: 'gold' },
+        { x: 236, y: 82, r: 22, kind: 'gold' },
         { x: 70, y: 82, r: 15, kind: 'bad' },
         { x: 316, y: 300, r: 15, kind: 'bad' }
       ],
@@ -293,7 +293,7 @@
   }
 
   // 已知可過關的一桿（離線搜尋得到；首次使用時會再驗證一次，失敗就重新搜尋）
-  var KNOWN = { 1: null, 2: null, 3: null, 4: null };
+  var KNOWN = { 1: { angle: 270, power: 0.5, t0: 0 }, 2: { angle: 315.125, power: 0.7, t0: 0 }, 3: { angle: 213.875, power: 0.7, t0: 0 }, 4: { angle: 272.5, power: 0.6, t0: 0 } };
   var solveCache = {};
   function solve(li) {
     if (solveCache[li]) return solveCache[li];

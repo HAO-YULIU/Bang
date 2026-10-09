@@ -1,1 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>越南公主｜夜語工作室</title>
+<meta name="description" content="夜語工作室原創線上密室：越南公主甄妮來台灣玩兩天，和三個屁孩一起闖台北。1–4 人連線，108 道謎題，最後用彈珠、象棋、撲克牌或麻將決勝負。">
+<style id="sd-hide">body{visibility:hidden}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;900&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
 
+<!-- 標題 -->
+<section id="title" class="scr on">
+  <div class="t-bg" id="t-bg"></div>
+  <div class="t-inner">
+    <img class="t-mcover" src="img/cover.jpg" alt="越南公主 封面">
+    <p class="t-kicker">夜語工作室　原創線上密室・1–4 人連線</p>
+    <h1 class="t-logo"><small>Công chúa Việt Nam</small>越南公主</h1>
+    <p class="t-sub">越南公主來台灣玩兩天，<br>遇到了兩個屁孩，和一個快被同化的學弟。</p>
+    <div class="t-cast" id="t-cast"></div>
+    <div class="t-btns">
+      <button class="btn gold" id="bSolo">👑 單人遊玩</button>
+      <button class="btn red" id="bHost">🏠 開房間</button>
+      <button class="btn teal" id="bJoin">🚪 加入房間</button>
+      <button class="btn" id="bResume" hidden>↩ 回到上次的旅程</button>
+      <div class="t-row"><button class="btn ghost sm" id="bGal">🏆 結局圖鑑</button><button class="btn ghost sm" id="bHow">📖 怎麼玩</button><button class="btn ghost sm" id="bSnd">🔊</button></div>
+    </div>
+    <p class="t-meta">難度 ★★★★☆・建議 100 分鐘・超過 300 分鐘旅程失敗</p>
+    <p class="t-who" id="who"></p>
+    <button class="t-back" onclick="toLobby()">← 回到夜語工作室大廳</button>
+  </div>
+</section>
+
+<!-- 房間列表 -->
+<section id="rooms" class="scr">
+  <div class="panel-page">
+    <h2>線上的房間</h2>
+    <p class="muted">選一間加入，或輸入房號。</p>
+    <div class="code-row"><input id="codeIn" maxlength="4" inputmode="numeric" placeholder="四位數房號" autocomplete="off"><button class="btn teal" id="bCode">加入</button></div>
+    <div id="roomList" class="room-list"><p class="muted">正在尋找線上的房間…</p></div>
+    <button class="btn ghost" data-back>← 返回</button>
+  </div>
+</section>
+
+<!-- 等待室 -->
+<section id="wait" class="scr">
+  <div class="panel-page wide">
+    <h2>房間 <b id="wCode">----</b></h2>
+    <p class="muted" id="wHint">把房號告訴朋友，或請他們在「加入房間」裡找到你。</p>
+    <div id="wMembers" class="w-members"></div>
+    <div class="w-pick"><h3>選擇你的角色</h3><div id="wChars" class="w-chars"></div><p class="muted small" id="wRule"></p></div>
+    <div class="w-chat"><div id="wChatLog" class="chat-log"></div><div class="chat-in"><input id="wChatIn" maxlength="80" placeholder="說點什麼…"><button class="btn sm" id="wChatGo">送出</button></div></div>
+    <div class="t-btns"><button class="btn gold" id="bStart">開始旅程</button><button class="btn ghost" id="bLeave">離開房間</button></div>
+  </div>
+</section>
+
+<!-- 遊戲 -->
+<section id="game" class="scr">
+  <div id="scene"></div>
+  <header id="hud">
+    <div class="h-l"><b id="hCh"></b><span id="hPz"></span></div>
+    <div class="h-c"><span id="hMaps"></span></div>
+    <div class="h-r"><span id="hTime">00:00</span>
+      <button id="hItems" title="道具">🎒</button><button id="hLog" title="旅行日誌">📓</button><button id="hChat" title="聊天">💬<i id="chatBadge" hidden></i></button><button id="hMenu" title="選單">☰</button></div>
+  </header>
+  <div id="party"></div>
+  <button id="bNext" class="btn gold next-btn" hidden></button>
+  <div id="say" hidden><div id="sayP"></div><div class="say-box"><b id="sayN"></b><p id="sayT"></p><p id="sayZh"></p><span class="say-more">▼</span></div><button id="sayskip" class="btn ghost sm">⏩ 跳過</button></div>
+</section>
+
+<!-- 最終遊戲 -->
+<section id="finale" class="scr"><div id="finRoot"></div></section>
+
+<!-- 頒獎／結局 -->
+<section id="award" class="scr"><div id="awardRoot"></div></section>
+
+<div id="modal" hidden></div>
+<div id="panel" hidden></div>
+<div id="chat" hidden><div class="chat-head"><b>💬 隊伍聊天</b><button id="chatX">✕</button></div><div id="chatLog" class="chat-log"></div>
+  <div class="chat-quick"><button data-q="神人。">神人。</button><button data-q="Bang!">Bang!</button><button data-q="完全法克。">完全法克。</button><button data-q="我知道了！">我知道了！</button><button data-q="救命">救命</button></div>
+  <div class="chat-in"><input id="chatIn" maxlength="120" placeholder="把你的線索告訴隊友…"><button class="btn sm" id="chatGo">送出</button></div></div>
+<div id="quips"></div>
+<div id="toasts"></div>
+<div id="fx"></div>
+
+<script src="js/audio.js"></script>
+<script src="js/portraits.js"></script>
+<script src="js/art.js"></script>
+<script src="js/net.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/kit.js"></script>
+<script src="js/story.js"></script>
+<script src="js/puzzles/ch0.js"></script>
+<script src="js/puzzles/ch1.js"></script>
+<script src="js/puzzles/ch2.js"></script>
+<script src="js/puzzles/ch3.js"></script>
+<script src="js/puzzles/ch4.js"></script>
+<script src="js/puzzles/ch5.js"></script>
+<script src="js/puzzles/ch6.js"></script>
+<script src="js/puzzles/ch7.js"></script>
+<script src="js/puzzles/ch8.js"></script>
+<script src="js/puzzles/ch9.js"></script>
+<script src="js/finale/xiangqi.js"></script>
+<script src="js/finale/cards.js"></script>
+<script src="js/finale/mahjong.js"></script>
+<script src="js/finale/pinball.js"></script>
+<script src="js/main.js"></script>
+
+<!-- 夜語工作室：沒有註冊 / 沒有角色就送回大廳；記錄遊玩、通關時間、提示、結局 -->
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+const LOBBY = 'https://hao-yuliu.github.io/escape-room/', SLUG = 'bang';
+const sb = createClient('https://umlnwzpmjxktfzjvcbts.supabase.co', 'sb_publishable_8J3VI8dijlCccHQbXPfCQQ_v_O0Au3w');
+
+const { data: { session } } = await sb.auth.getSession();
+const user = session?.user ?? null;
+const { data: profile } = user
+  ? await sb.from('profiles').select('username').eq('id', user.id).maybeSingle()
+  : { data: null };
+
+if (!user || !profile) {
+  location.replace(`${LOBBY}?need=player&room=${SLUG}#rooms`);
+} else {
+  const { data: game } = await sb.from('games').select('id').eq('slug', SLUG).maybeSingle();
+  const begin = async () => {
+    if (!game) return null;
+    const { data } = await sb.from('play_records').insert({ user_id: user.id, game_id: game.id }).select('id').single();
+    return data?.id ?? null;
+  };
+  const finish = async (rid, fields) => {
+    if (!game) return;
+    rid = rid || await begin();
+    if (rid) await sb.from('play_records').update({ ...fields, updated_at: new Date().toISOString() }).eq('id', rid);
+  };
+  window.SD = {
+    player: profile, uid: user.id, sb,
+    begin,
+    clear: (rid, secs, deaths = 0, hints = 0, ending = null) => finish(rid, { status: 'cleared', clear_time_sec: secs, deaths, hints, ending }),
+    fail: (rid, secs, deaths = 0, hints = 0) => finish(rid, { status: 'failed', clear_time_sec: null, deaths, hints }),
+    ach: (code) => sb.from('user_achievements').upsert({ user_id: user.id, code }, { onConflict: 'user_id,code', ignoreDuplicates: true }),
+  };
+  document.getElementById('who').textContent = `玩家：${profile.username}`;
+  document.getElementById('sd-hide').remove();
+  window.dispatchEvent(new Event('sd-ready'));
+}
+</script>
+</body>
+</html>

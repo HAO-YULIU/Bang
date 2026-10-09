@@ -47,8 +47,11 @@ const ENDINGS = [
 // ---------- 謎題註冊 ----------
 const PZ = {}, PZL = [];
 const LV = { 1: '困難', 2: '地獄', 3: '夢魘' };
-function P(def) { def.no = PZL.length + 1; def.lv = def.lv || 1; PZ[def.id] = def; PZL.push(def); return def; }
-const pzOf = (ch) => PZL.filter(p => p.ch === ch);
+let PZN = 0, PZM = 0;
+function P(def) { if (def.mp) def.ui = 'none'; def.no = def.mp ? 'M' + (++PZM) : ++PZN; def.lv = def.lv || 1; PZ[def.id] = def; PZL.push(def); return def; }
+// 多人專屬題（mp）：只有 2 人以上連線時才會出現
+const pzVisible = (p) => !p.mp || (G && G.mode === 'multi' && G.players.length >= (p.minN || 2));
+const pzOf = (ch) => PZL.filter(p => p.ch === ch && pzVisible(p));
 
 // ---------- 道具 ----------
 const ITEMS = {
@@ -147,14 +150,35 @@ function apply(a) {
       G.phase = 'play'; G.started = Date.now(); ev.push({ k: 'start' }); break;
     }
     case 'solve': {
-      if (G.phase !== 'play' || G.solved[a.id] || !PZ[a.id]) return;
-      G.solved[a.id] = a.by; const it = PZ[a.id].item; if (it && !G.items.includes(it)) G.items.push(it);
-      ev.push({ k: 'solve', id: a.id, by: a.by }); break;
+      if (G.phase !== 'play' || G.solved[a.id] || !PZ[a.id] || PZ[a.id].mp) return;
+      doSolve(a.id, a.by, ev); break;
     }
     case 'wrong': {
       if (G.phase !== 'play' || G.solved[a.id] || G.lost) return;
-      G.wrong[a.id] = (G.wrong[a.id] || 0) + 1; G.wrongs++; G.maps--; ev.push({ k: 'wrong', id: a.id, by: a.by });
-      if (G.maps <= 0) { G.maps = 0; G.lost = true; ev.push({ k: 'lost' }); }
+      doWrong(a.id, a.by, ev); break;
+    }
+    case 'mp': {   // 多人專屬題：每個人的操作送到主機，主機算出共同狀態
+      const z = PZ[a.id];
+      if (G.phase !== 'play' || !z || !z.mp || G.solved[a.id] || G.lost || seat < 0) return;
+      G.mp = G.mp || {}; const n = G.players.length;
+      const st = G.mp[a.id] || z.mpInit(n, G);
+      const r = z.mpAct(JSON.parse(JSON.stringify(st)), seat, a.v, n, G, Date.now()) || {};
+      G.mp[a.id] = r.st || st;
+      if (r.solved) doSolve(a.id, a.by, ev);
+      else if (r.wrong) { doWrong(a.id, a.by, ev); G.mp[a.id] = r.keep ? G.mp[a.id] : z.mpInit(n, G); }
+      if (r.say) ev.push({ k: 'say', q: r.say });
+      break;
+    }
+    case 'mptick': {
+      if (G.phase !== 'play' || !G.mp) return;
+      let any = false; const n = G.players.length;
+      for (const id in G.mp) {
+        const z = PZ[id]; if (!z || !z.mpTick || G.solved[id]) continue;
+        const r = z.mpTick(JSON.parse(JSON.stringify(G.mp[id])), n, G, Date.now()); if (!r) continue;
+        any = true; G.mp[id] = r.st || G.mp[id];
+        if (r.solved) doSolve(id, a.by, ev); else if (r.wrong) { doWrong(id, a.by, ev); G.mp[id] = z.mpInit(n, G); }
+      }
+      if (!any) return;
       break;
     }
     case 'hint': {
@@ -192,6 +216,8 @@ function apply(a) {
   G.rev++; G.ev = ev.length ? ev : []; G.evRev = G.rev;
   commit();
 }
+function doSolve(id, by, ev) { G.solved[id] = by; const it = PZ[id].item; if (it && !G.items.includes(it)) G.items.push(it); ev.push({ k: 'solve', id, by }); }
+function doWrong(id, by, ev) { G.wrong[id] = (G.wrong[id] || 0) + 1; G.wrongs++; G.maps--; ev.push({ k: 'wrong', id, by }); if (G.maps <= 0) { G.maps = 0; G.lost = true; ev.push({ k: 'lost' }); } }
 function chapterDone(ch) { return pzOf(ch).every(p => G.solved[p.id]); }
 function commit() {
   save();
@@ -214,6 +240,7 @@ function onState() {
   // 事件
   if (G.evRev != null && G.evRev !== L.evSeen) { L.evSeen = G.evRev; (G.ev || []).forEach(handleEv); }
   render();
+  if (L.openPz && PZ[L.openPz]?.mp && !G.solved[L.openPz]) mpDraw(false);
 }
 function handleEv(e) {
   const who = G.players.find(p => p.id === e.by), ch = who?.ch || 'zn', nm = who ? (CH[ch]?.n + (G.mode === 'multi' ? `（${esc(who.name)}）` : '')) : '';
@@ -232,6 +259,7 @@ function handleEv(e) {
   }
   if (e.k === 'hint') { if (e.by !== L.me.id) toast(`😇 ${nm} 問了博育一次提示（地圖 -1）`); }
   if (e.k === 'lost') { sfx('lost'); }
+  if (e.k === 'say' && e.q) quip(e.q[0], e.q[1], e.q[2]);
   if (e.k === 'revive') { toast('🧭 重新找到路了。地圖補滿 8 張，時間 +10 分鐘。'); }
   if (e.k === 'chapter') { closePz(); }
   if (e.k === 'restart') { L.story = -1; closePz(); toast('🔁 旅程重新開始。'); }
@@ -250,6 +278,7 @@ function startTicker() {
     else if (G.t % 10 === 0) save();
     hudTime();
     if (G.phase === 'finale') botDrive();
+    if (G.phase === 'play' && G.mp && Object.keys(G.mp).some(id => PZ[id]?.mpTick && !G.solved[id])) apply({ t: 'mptick', by: L.me.id });
   }, 1000);
   // 非主機：本機推進顯示時間
   clearInterval(L.clientTick);
@@ -315,7 +344,7 @@ function render() {
 function hud() {
   const c = CHAPTERS[G.ch], list = pzOf(G.ch), done = list.filter(p => G.solved[p.id]).length;
   $('#hCh').textContent = `${c.name}・${c.place}`;
-  $('#hPz').textContent = `　${done}/${list.length}　總進度 ${Object.keys(G.solved).length}/${PZL.length}`;
+  $('#hPz').textContent = `　${done}/${list.length}　總進度 ${Object.keys(G.solved).length}/${PZL.filter(pzVisible).length}`;
   $('#hMaps').innerHTML = Array.from({ length: MAPS }, (_, i) => `<i class="${i < G.maps ? 'on' : ''}">🗺️</i>`).join('');
   hudTime();
 }
@@ -364,6 +393,12 @@ function splitFor(pz) {
   if (!mine.length) return `<div class="pz-split"><h4>🃏 這題的 ${pz.split.length} 張線索卡都在隊友手上</h4><p class="small">打開 💬 聊天，請他們把線索唸給你聽。</p></div>`;
   return `<div class="pz-split"><h4>🃏 你手上的線索卡${n > 1 ? `（另外 ${others} 張在隊友手上，用 💬 聊天互相告訴對方）` : ''}</h4>${mine.map(x => `<div class="clue"><span>線索 ${'ABCDEFGH'[x.i]}</span>${x.h}</div>`).join('')}</div>`;
 }
+function mpState(id) { const z = PZ[id]; return (G.mp && G.mp[id]) || z.mpInit(G.players.length, G); }
+function mpDraw(first) {
+  const id = L.openPz, z = PZ[id], body = $('#modal .pz-body'); if (!z || !body) return;
+  const ctx = ctxOf(); ctx.mp = (v) => act({ t: 'mp', id, v });
+  try { z.mpView(body, ctx, mpState(id), first); } catch (e) { console.warn(e); }
+}
 function refreshPz(fresh) {
   const id = L.openPz; if (!id) return;
   const pz = PZ[id], done = !!G.solved[id], ctx = ctxOf();
@@ -371,12 +406,12 @@ function refreshPz(fresh) {
   const hinted = G.hinted[id];
   if (fresh || !m.dataset.id || m.dataset.id !== id || done !== (m.dataset.done === '1')) {
     m.dataset.id = id; m.dataset.done = done ? '1' : '0';
-    m.innerHTML = `<div class="pz-card lv${pz.lv}"><header><span class="pz-no">#${pz.no}</span><b>${esc(pz.t)}</b><span class="lv">${LV[pz.lv]}</span><button class="x" data-close>✕</button></header>
+    m.innerHTML = `<div class="pz-card lv${pz.lv}"><header><span class="pz-no">#${pz.no}</span><b>${esc(pz.t)}</b><span class="lv">${pz.mp ? '多人・' : ''}${LV[pz.lv]}</span><button class="x" data-close>✕</button></header>
       <div class="pz-body"></div>${splitFor(pz)}
       ${done ? `<div class="pz-done">✅ 已解開　答案：<b>${esc(pz.show || (Array.isArray(pz.ans) ? pz.ans[0] : pz.solve || ''))}</b></div>` : (pz.ui === 'none' ? '' : `<form class="pz-ans"><input name="a" autocomplete="off" placeholder="${esc(pz.ph || '輸入答案')}" ${pz.num ? 'inputmode="numeric"' : ''}><button class="btn gold">送出</button></form>`)}
       <footer><button class="btn ghost sm" data-hint>${hinted ? '😇 再看一次博育的提示' : '😇 問小天使博育（地圖 -1）'}</button><span class="muted small">${G.wrong[id] ? `已答錯 ${G.wrong[id]} 次` : ''}</span></footer></div>`;
     const body = $('.pz-body', m);
-    try { if (pz.build) pz.build(body, ctx, done); else body.innerHTML = typeof pz.body === 'function' ? pz.body(ctx) : (pz.body || ''); } catch (e) { console.warn(e); body.textContent = '（這題載入失敗）'; }
+    try { if (pz.mp && !done) { body.innerHTML = ''; setTimeout(() => mpDraw(true)); } else if (pz.mp) body.innerHTML = `<p>${esc(pz.doneText || '你們一起完成了這一關！')}</p>`; else if (pz.build) pz.build(body, ctx, done); else body.innerHTML = typeof pz.body === 'function' ? pz.body(ctx) : (pz.body || ''); } catch (e) { console.warn(e); body.textContent = '（這題載入失敗）'; }
     const f = $('.pz-ans', m); if (f) f.onsubmit = (e) => { e.preventDefault(); const v = f.a.value; if (!norm(v)) return; submitAns(id, v); f.a.value = ''; };
     $('[data-close]', m).onclick = closePz;
     $('[data-hint]', m).onclick = () => askHint(id);

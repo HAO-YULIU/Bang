@@ -361,6 +361,7 @@ function splitFor(pz) {
   if (!pz.split) return '';
   const n = nOf(), mine = pz.split.map((h, i) => ({ h, i })).filter(x => n === 1 || x.i % n === L.seat);
   const others = n > 1 ? pz.split.length - mine.length : 0;
+  if (!mine.length) return `<div class="pz-split"><h4>🃏 這題的 ${pz.split.length} 張線索卡都在隊友手上</h4><p class="small">打開 💬 聊天，請他們把線索唸給你聽。</p></div>`;
   return `<div class="pz-split"><h4>🃏 你手上的線索卡${n > 1 ? `（另外 ${others} 張在隊友手上，用 💬 聊天互相告訴對方）` : ''}</h4>${mine.map(x => `<div class="clue"><span>線索 ${'ABCDEFGH'[x.i]}</span>${x.h}</div>`).join('')}</div>`;
 }
 function refreshPz(fresh) {
